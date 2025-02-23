@@ -11,13 +11,7 @@
     <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
 
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            text-align: center; 
-            margin: 0; 
-            padding: 0;
-            overflow-x: hidden;
-        }
+        body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 0; overflow-x: hidden; }
         input, button { padding: 10px; margin: 5px; font-size: 16px; }
         table { width: 50%; margin: auto; border-collapse: collapse; margin-top: 20px; }
         th, td { border: 1px solid black; padding: 8px; text-align: center; }
@@ -47,14 +41,7 @@
         }
 
         /* Input & Buttons */
-        #input-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin-top: 10px;
-        }
+        #input-container { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 10px; }
         #userNumber { width: 150px; text-align: center; }
         button { cursor: pointer; }
 
@@ -71,16 +58,40 @@
             font-size: 16px;
             border-radius: 5px;
         }
+
+        /* Login Popup */
+        #loginModal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #loginBox {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
 
+    <!-- Login Modal -->
+    <div id="loginModal">
+        <div id="loginBox">
+            <h2>Login</h2>
+            <input type="text" id="username" placeholder="Username"><br>
+            <input type="password" id="password" placeholder="Password"><br><br>
+            <button onclick="checkLogin()">Login</button>
+        </div>
+    </div>
+
     <div id="header">
         <img id="logo" src="./add-ons/HP_logo.png" alt="Logo">
         <h2>Enter Your Number</h2>
-        <div id="clock-container">
-            <span id="clock"></span>
-        </div>
+        <div id="clock-container"><span id="clock"></span></div>
     </div>
 
     <div id="input-container">
@@ -104,13 +115,22 @@
     <button id="logoutButton" onclick="logout()">Logout</button>
 
     <script>
+        // LOGIN FUNCTION
+        function checkLogin() {
+            let user = document.getElementById("username").value;
+            let pass = document.getElementById("password").value;
+
+            if (user === "Manager" && pass === "Manager1234") {
+                document.getElementById("loginModal").style.display = "none";
+            } else {
+                alert("Invalid credentials!");
+            }
+        }
+
         // LIVE CLOCK FUNCTION
         function updateClock() {
             let now = new Date();
-            let hours = String(now.getHours()).padStart(2, '0');
-            let minutes = String(now.getMinutes()).padStart(2, '0');
-            let seconds = String(now.getSeconds()).padStart(2, '0');
-            document.getElementById("clock").innerText = `${hours}:${minutes}:${seconds}`;
+            document.getElementById("clock").innerText = now.toLocaleTimeString();
         }
         setInterval(updateClock, 1000);
         updateClock();
@@ -193,9 +213,7 @@
             }
         });
 
-        window.onload = function() {
-            loadNumbers();
-        };
+        window.onload = loadNumbers;
     </script>
 
 </body>
