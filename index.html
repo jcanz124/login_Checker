@@ -11,114 +11,41 @@
     <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
 
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 0; overflow-x: hidden; }
+        body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 0; }
         input, button { padding: 10px; margin: 5px; font-size: 16px; }
         table { width: 50%; margin: auto; border-collapse: collapse; margin-top: 20px; }
         th, td { border: 1px solid black; padding: 8px; text-align: center; }
         .red { background-color: red; color: white; }
         .green { background-color: green; color: white; }
 
-        /* Header */
-        #header { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; padding: 10px; gap: 20px; }
-        #logo { height: 60px; }
-        #clock-container { padding: 10px; border: 2px solid black; border-radius: 8px; font-size: 22px; font-weight: bold; background-color: white; }
-
         /* Input Container */
-        #input-container { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 10px; }
+        #input-container { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 10px; }
         #userNumber { width: 150px; text-align: center; }
         button { cursor: pointer; }
-
-        /* Login Popup */
-        #login-popup {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.5); display: flex;
-            align-items: center; justify-content: center;
-        }
-        #login-box {
-            background: white; padding: 20px; border-radius: 10px;
-            text-align: center; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
-        }
-        #login-box input { display: block; margin: 10px auto; padding: 8px; }
-        #logout-btn {
-            position: fixed; bottom: 20px; right: 20px;
-            padding: 10px 15px; background: red; color: white;
-            border: none; font-size: 16px; cursor: pointer;
-            border-radius: 5px;
-        }
     </style>
 </head>
 <body>
 
-    <!-- Login Popup -->
-    <div id="login-popup">
-        <div id="login-box">
-            <h2>Login</h2>
-            <input type="text" id="loginUsername" placeholder="Username">
-            <input type="password" id="loginPassword" placeholder="Password">
-            <button onclick="checkLogin()">Login</button>
-        </div>
+    <h2>Enter Your Number</h2>
+
+    <div id="input-container">
+        <input type="number" id="userNumber" placeholder="Enter number">
+        <button id="submitButton" onclick="saveNumber()">Submit</button>
     </div>
 
-    <!-- Main Content (Hidden Until Login) -->
-    <div id="main-container" style="display: none;">
-        <div id="header">
-            <img id="logo" src="./add-ons/HP_logo.png" alt="Logo">
-            <h2>Enter Your Number</h2>
-            <div id="clock-container"><span id="clock"></span></div>
-        </div>
-
-        <div id="input-container">
-            <input type="number" id="userNumber" placeholder="Enter number">
-            <button id="submitButton" onclick="saveNumber()" disabled>Submit</button>
-            <button onclick="downloadExcel()" style="background-color: green; color: white;">Download Excel</button>
-            <button onclick="clearNumbers()" style="background-color: red; color: white;">Clear All</button>
-        </div>
-
-        <p id="message"></p>
-
-        <h3>Stored Numbers</h3>
-        <table>
-            <thead>
-                <tr><th>Number</th><th>Timestamp</th></tr>
-            </thead>
-            <tbody id="dataTable"></tbody>
-        </table>
-
-        <!-- Logout Button -->
-        <button id="logout-btn" onclick="logout()">Logout</button>
-    </div>
+    <h3>Stored Numbers</h3>
+    <table>
+        <thead>
+            <tr><th>Number</th><th>Timestamp</th></tr>
+        </thead>
+        <tbody id="dataTable"></tbody>
+    </table>
 
     <script>
-        function checkLogin() {
-            let username = document.getElementById("loginUsername").value;
-            let password = document.getElementById("loginPassword").value;
-
-            if (username === "Manager" && password === "Manager1234") {
-                document.getElementById("login-popup").style.display = "none";
-                document.getElementById("main-container").style.display = "block";
-            } else {
-                alert("Invalid credentials!");
-            }
-        }
-
-        function logout() {
-            document.getElementById("login-popup").style.display = "flex";
-            document.getElementById("main-container").style.display = "none";
-        }
-
-        function updateClock() {
-            let now = new Date();
-            let timeString = now.toLocaleTimeString();
-            document.getElementById("clock").innerText = timeString;
-        }
-
-        setInterval(updateClock, 1000);
-        updateClock();
-
         function saveNumber() {
             let number = document.getElementById("userNumber").value;
             if (!number) {
-                document.getElementById("message").innerText = "Please enter a number.";
+                alert("Please enter a number.");
                 return;
             }
 
@@ -129,9 +56,7 @@
             numbers.unshift({ number, timestamp });
 
             localStorage.setItem("numbers", JSON.stringify(numbers));
-            document.getElementById("message").innerText = "Number saved!";
             document.getElementById("userNumber").value = "";
-            document.getElementById("submitButton").disabled = true;
             loadNumbers();
         }
 
@@ -150,45 +75,11 @@
             });
         }
 
-        function downloadExcel() {
-            if (typeof XLSX === "undefined") {
-                alert("SheetJS (XLSX) library is not loaded!");
-                return;
-            }
-
-            let numbers = JSON.parse(localStorage.getItem("numbers")) || [];
-            if (numbers.length === 0) {
-                alert("No data to download.");
-                return;
-            }
-
-            let now = new Date();
-            let fileName = `Login_${now.toLocaleDateString().replace(/\//g, "")}.xlsx`;
-
-            let wb = XLSX.utils.book_new();
-            let ws_data = [["Number", "Timestamp"]];
-
-            numbers.forEach(item => {
-                ws_data.push([item.number, item.timestamp]);
-            });
-
-            let ws = XLSX.utils.aoa_to_sheet(ws_data);
-            XLSX.utils.book_append_sheet(wb, ws, "Numbers");
-            XLSX.writeFile(wb, fileName);
-        }
-
-        function clearNumbers() {
-            if (confirm("Are you sure you want to clear all saved numbers?")) {
-                localStorage.removeItem("numbers");
-                document.getElementById("message").innerText = "All numbers cleared!";
-                loadNumbers();
-            }
-        }
-
+        // Make Enter key trigger the Submit button
         document.getElementById("userNumber").addEventListener("keypress", function(event) {
             if (event.key === "Enter") {
                 event.preventDefault();
-                document.getElementById("submitButton").disabled = false;
+                document.getElementById("submitButton").click();
             }
         });
 
