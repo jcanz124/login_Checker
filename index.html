@@ -69,7 +69,7 @@
 
         <div id="input-container">
             <input type="number" id="userNumber" placeholder="Enter number">
-            <button onclick="saveNumber()">Submit</button>
+            <button id="submitButton" onclick="saveNumber()" disabled>Submit</button>
             <button onclick="downloadExcel()" style="background-color: green; color: white;">Download Excel</button>
             <button onclick="clearNumbers()" style="background-color: red; color: white;">Clear All</button>
         </div>
@@ -94,26 +94,26 @@
             let password = document.getElementById("loginPassword").value;
 
             if (username === "Manager" && password === "Manager1234") {
-                localStorage.setItem("loggedIn", "true");
                 document.getElementById("login-popup").style.display = "none";
                 document.getElementById("main-container").style.display = "block";
-                loadNumbers();
-                updateClock();
             } else {
-                alert("Invalid login. Try again.");
+                alert("Invalid credentials!");
             }
         }
 
         function logout() {
-            localStorage.removeItem("loggedIn");
-            location.reload();
+            document.getElementById("login-popup").style.display = "flex";
+            document.getElementById("main-container").style.display = "none";
         }
 
         function updateClock() {
             let now = new Date();
-            document.getElementById("clock").innerText = now.toLocaleTimeString();
+            let timeString = now.toLocaleTimeString();
+            document.getElementById("clock").innerText = timeString;
         }
+
         setInterval(updateClock, 1000);
+        updateClock();
 
         function saveNumber() {
             let number = document.getElementById("userNumber").value;
@@ -121,12 +121,17 @@
                 document.getElementById("message").innerText = "Please enter a number.";
                 return;
             }
-            let now = new Date().toLocaleString();
+
+            let now = new Date();
+            let timestamp = now.toLocaleString();
+
             let numbers = JSON.parse(localStorage.getItem("numbers")) || [];
-            numbers.unshift({ number, timestamp: now });
+            numbers.unshift({ number, timestamp });
+
             localStorage.setItem("numbers", JSON.stringify(numbers));
             document.getElementById("message").innerText = "Number saved!";
             document.getElementById("userNumber").value = "";
+            document.getElementById("submitButton").disabled = true;
             loadNumbers();
         }
 
@@ -134,8 +139,13 @@
             let numbers = JSON.parse(localStorage.getItem("numbers")) || [];
             let table = document.getElementById("dataTable");
             table.innerHTML = "";
+
             numbers.forEach(item => {
-                let row = `<tr><td>${item.number}</td><td>${item.timestamp}</td></tr>`;
+                let timestamp = new Date(item.timestamp);
+                let minutes = timestamp.getMinutes();
+                let rowClass = minutes >= 35 ? "red" : "green";
+
+                let row = `<tr class="${rowClass}"><td>${item.number}</td><td>${item.timestamp}</td></tr>`;
                 table.innerHTML += row;
             });
         }
@@ -153,14 +163,17 @@
             }
 
             let now = new Date();
-            let fileName = `Login_${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}.xlsx`;
+            let fileName = `Login_${now.toLocaleDateString().replace(/\//g, "")}.xlsx`;
 
             let wb = XLSX.utils.book_new();
             let ws_data = [["Number", "Timestamp"]];
-            numbers.forEach(item => ws_data.push([item.number, item.timestamp]));
+
+            numbers.forEach(item => {
+                ws_data.push([item.number, item.timestamp]);
+            });
+
             let ws = XLSX.utils.aoa_to_sheet(ws_data);
             XLSX.utils.book_append_sheet(wb, ws, "Numbers");
-
             XLSX.writeFile(wb, fileName);
         }
 
@@ -172,14 +185,14 @@
             }
         }
 
-        window.onload = function() {
-            if (localStorage.getItem("loggedIn") === "true") {
-                document.getElementById("login-popup").style.display = "none";
-                document.getElementById("main-container").style.display = "block";
-                loadNumbers();
-                updateClock();
+        document.getElementById("userNumber").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                document.getElementById("submitButton").disabled = false;
             }
-        };
+        });
+
+        window.onload = loadNumbers;
     </script>
 
 </body>
