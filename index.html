@@ -6,6 +6,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Number Collector</title>
+
+    <!-- SheetJS (XLSX) for Excel Download -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <style>
         body { 
             font-family: Arial, sans-serif; 
@@ -24,12 +28,12 @@
         #header {
             display: flex;
             align-items: center;
-            justify-content: center; /* Center everything horizontally */
+            justify-content: center;
             flex-wrap: wrap;
             padding: 10px;
             width: 100vw;
             box-sizing: border-box;
-            gap: 20px; /* Space between items */
+            gap: 20px;
         }
         #logo {
             height: 60px;
