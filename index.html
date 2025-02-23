@@ -36,6 +36,15 @@
             gap: 20px;
         }
         #logo { height: 60px; }
+        #clock-container {
+            padding: 10px;
+            border: 2px solid black;
+            border-radius: 8px;
+            font-size: 22px;
+            font-weight: bold;
+            background-color: white;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+        }
 
         /* Input & Buttons */
         #input-container {
@@ -102,11 +111,16 @@
     <div id="header">
         <img id="logo" src="./add-ons/HP_logo.png" alt="Logo">
         <h2>Enter Your Number</h2>
+        <div id="clock-container">
+            <span id="clock"></span>
+        </div>
     </div>
 
     <div id="input-container">
         <input type="number" id="userNumber" placeholder="Enter number">
         <button id="submitButton" onclick="saveNumber()">Submit</button>
+        <button onclick="downloadExcel()" style="background-color: green; color: white;">Download Excel</button>
+        <button onclick="clearNumbers()" style="background-color: red; color: white;">Clear All</button>
     </div>
 
     <p id="message"></p>
@@ -147,6 +161,17 @@
             location.reload();
         }
 
+        // LIVE CLOCK FUNCTION
+        function updateClock() {
+            let now = new Date();
+            let hours = String(now.getHours()).padStart(2, '0');
+            let minutes = String(now.getMinutes()).padStart(2, '0');
+            let seconds = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById("clock").innerText = `${hours}:${minutes}:${seconds}`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
         // NUMBER SAVING FUNCTION
         function saveNumber() {
             let number = document.getElementById("userNumber").value;
@@ -182,15 +207,40 @@
             });
         }
 
-        // ENTER KEY FUNCTION FOR SUBMIT
+        // EXCEL DOWNLOAD FUNCTION
+        function downloadExcel() {
+            let numbers = JSON.parse(localStorage.getItem("numbers")) || [];
+            if (numbers.length === 0) {
+                alert("No data to download.");
+                return;
+            }
+
+            let wb = XLSX.utils.book_new();
+            let ws_data = [["Number", "Timestamp"]];
+
+            numbers.forEach(item => {
+                ws_data.push([item.number, item.timestamp]);
+            });
+
+            let ws = XLSX.utils.aoa_to_sheet(ws_data);
+            XLSX.utils.book_append_sheet(wb, ws, "Numbers");
+            XLSX.writeFile(wb, `Login_Data.xlsx`);
+        }
+
+        function clearNumbers() {
+            if (confirm("Are you sure you want to clear all saved numbers?")) {
+                localStorage.removeItem("numbers");
+                loadNumbers();
+            }
+        }
+
         document.getElementById("userNumber").addEventListener("keypress", function(event) {
             if (event.key === "Enter") {
                 event.preventDefault();
-                document.getElementById("submitButton").click();
+                saveNumber();
             }
         });
 
-        // CHECK LOGIN ON PAGE LOAD
         window.onload = function() {
             checkSession();
             loadNumbers();
