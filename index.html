@@ -7,8 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Number Collector</title>
 
-    <!-- SheetJS (XLSX) for Excel Download -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- SheetJS (XLSX) for Excel Export -->
+    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
 
     <style>
         body { 
@@ -95,6 +95,9 @@
     </table>
 
     <script>
+        // Confirm SheetJS is loaded
+        console.log("XLSX Loaded:", typeof XLSX !== "undefined" ? "Yes" : "No");
+
         function updateClock() {
             let now = new Date();
             let hours = String(now.getHours()).padStart(2, '0');
@@ -142,6 +145,11 @@
         }
 
         function downloadExcel() {
+            if (typeof XLSX === "undefined") {
+                alert("SheetJS (XLSX) library is not loaded!");
+                return;
+            }
+
             let numbers = JSON.parse(localStorage.getItem("numbers")) || [];
             if (numbers.length === 0) {
                 alert("No data to download.");
@@ -153,6 +161,7 @@
 
             let wb = XLSX.utils.book_new();
             let ws_data = [["Number", "Timestamp"]];
+
             numbers.forEach(item => {
                 ws_data.push([item.number, item.timestamp]);
             });
